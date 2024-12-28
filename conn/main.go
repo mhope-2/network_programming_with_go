@@ -2,15 +2,23 @@ package main
 
 import (
 	"fmt"
-	"github.com/mhope-2/go_networking/conn/client"
-	"github.com/mhope-2/go_networking/conn/server"
+	"log"
+	"os"
+	"os/signal"
 	"sync"
 	"time"
+
+	"github.com/mhope-2/go_networking/conn/client"
+	"github.com/mhope-2/go_networking/conn/server"
 )
 
 func main() {
 	done := make(chan string)
 	quit := make(chan struct{})
+	interrupt := make(chan os.Signal)
+
+	signal.Notify(interrupt, os.Interrupt)
+
 	var wg sync.WaitGroup
 
 	// Start the listener in a goroutine
@@ -23,6 +31,12 @@ func main() {
 	// Start the dialer
 	wg.Add(1)
 	go client.DialAndSend(listenerAddress, &wg, 5*time.Second)
+
+	go func() {
+		<-interrupt
+		log.Println("Received interrupt signal. Shutting down...")
+		close(quit)
+	}()
 
 	// Wait for the dialer to finish
 	wg.Wait()
