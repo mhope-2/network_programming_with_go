@@ -6,7 +6,7 @@ import (
 )
 
 func main() {
-	listener, err := listen()
+	listener, err := listen("tcp", "127.0.0.1:0")
 	if err != nil {
 		log.Fatalf("Failed to start listener: %v", err)
 	}
@@ -18,8 +18,8 @@ func main() {
 	}()
 }
 
-func listen() (net.Listener, error) {
-	listener, err := net.Listen("tcp", "127.0.0.1:0")
+func listen(network, address string) (net.Listener, error) {
+	listener, err := net.Listen(network, address)
 	if err != nil {
 		return nil, err
 	}
